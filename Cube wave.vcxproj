@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="2d canvas.h" />
     <ClInclude Include="Cube wave.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Globals.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="World scene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="2d canvas.cpp" />
     <ClCompile Include="Cube wave.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Objects 3d.cpp" />

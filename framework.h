@@ -20,3 +20,4 @@
 #include "Globals.h"
 #include "Points vectors.h"
 #include "Objects 3d.h"
+#include "2d canvas.h"

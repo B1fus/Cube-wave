@@ -39,6 +39,9 @@
     <ClInclude Include="Objects 3d.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="2d canvas.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cube wave.cpp">
@@ -51,6 +54,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="World scene.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="2d canvas.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

@@ -23,6 +23,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 World_scene world;
 Object a;
+Canvas canvas(SCREEN_WIDTH,SCREEN_HEIGHT);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -122,7 +123,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     a.rotation = { 0,45,45 };
     a.position = { 100,0,0 };
     world.add_object(a);
-    a.position = { 110,0,0 };
+    a.position = { -200,0,0 };
     world.add_object(a);
 
     // Цикл основного сообщения:
@@ -274,25 +275,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SelectObject(Memhdc, Membitmap);
         //drawing code goes in here
         start_time = std::chrono::steady_clock::now();
-        //static int* img;
+        //static int* img = new int[win_height*win_width];
         //for (int i = 0; i < win_height*win_width; i++) {
-        //    if (i > 10000 && i < 100000) {
+        //    if (i > 1000 && i < 100000) {
         //        img[i] = 0xffffff;
         //    }
         //    else {
-        //        //img[i] = 0;
+        //        img[i] = 0;
         //    }
         //}
-        //GetBitmapBits(Membitmap, win_width * win_height * 4, lptr);
+        
+        static float df = 0;
+        df += 0.5;
+
+        canvas.draw_line(10-df, 500, 1100, 100-df);
+        SetBitmapBits(Membitmap, win_width * win_height * sizeof(canvas.get_bitMap()[0]), canvas.get_bitMap());
 
 
         Gdiplus::Graphics gr(Memhdc);
-        gr.FillRectangle(&whiteBrush, 0, 0, win_width, win_height); //clear window
-        
+        //gr.FillRectangle(&whiteBrush, 0, 0, win_width, win_height); //clear window
+
         world.set_gdiGraphics(&gr);
 
-        static float df = 0;
-        df += 0.1;
         if (world.get_count_objects() > 1) {
             world.edit_object(0).rotation = { 10,30,40 + df };
             world.edit_object(1).rotation = { 10,30 + df,40 };
