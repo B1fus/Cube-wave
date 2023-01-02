@@ -1,10 +1,14 @@
 #pragma once
 #include "framework.h"
+#include "2d canvas.h"
+#include "Points vectors.h"
+#include "Objects 3d.h"
 
 class World_scene
 {
 public:
-	void set_gdiGraphics(Gdiplus::Graphics* gr);
+	//void set_gdiGraphics(Gdiplus::Graphics* gr);
+	void set_canvas(Canvas* canvas);
 
 	Camera get_camera();
 	void set_camera(Camera newCamera);
@@ -22,7 +26,8 @@ public:
 	~World_scene();
 private:
 	Camera camera;
-	Gdiplus::Graphics* GdiGr;
+	//Gdiplus::Graphics* GdiGr;
+	Canvas* canvas;
 	std::vector<Object> objects;
 	std::vector<bool> updateProjObj;
 	bool updateCameraLookat, updateCameraPerspective;

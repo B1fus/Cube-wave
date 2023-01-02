@@ -12,9 +12,9 @@ Object::Object()
 Object::~Object()
 {
 }
-void Object::draw_edges(Gdiplus::Graphics& gr)
+void Object::draw_edges(Canvas& gr)
 {
-	static Gdiplus::Pen pen(Gdiplus::Color(0, 0, 0));
+	//static Gdiplus::Pen pen(Gdiplus::Color(0, 0, 0));
 	Point2<signed char> here0, here1, here2; //if point on screen
 	for (int i = 0; i < polygons.size(); i += 3) {
 		here0.x = showVertices[polygons[i]].x < 0 ? -1 : 0;
@@ -34,27 +34,27 @@ void Object::draw_edges(Gdiplus::Graphics& gr)
 		
 		if (here0.x + here1.x != -2 && here0.x + here1.x != 2)
 		if (here0.y + here1.y != -2 && here0.y + here1.y != 2)
-			gr.DrawLine(&pen, showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y);
+			gr.draw_line(showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y, 0x0);
 
 		if (here1.x + here2.x != -2 && here1.x + here2.x != 2)
 		if (here1.y + here2.y != -2 && here1.y + here2.y != 2)
-			gr.DrawLine(&pen, showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y, showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y);
+			gr.draw_line(showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y, showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y, 0x0);
 
 		if (here0.x + here2.x != -2 && here0.x + here2.x != 2)
 		if (here0.y + here2.y != -2 && here0.y + here2.y != 2)
-			gr.DrawLine(&pen, showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y);
+			gr.draw_line(showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y, 0x0);
 	}
 }
 
-void Object::draw_polygons(Gdiplus::Graphics& gr)
+void Object::draw_polygons(Canvas& gr)
 {
 	Point2<signed char> here0, here1, here2; //if point on screen
-	static Gdiplus::SolidBrush brush(Gdiplus::Color(0,0,0));
+	int color = 0;
 	for (int i = 0; i < polygons.size(); i += 3) {
 		if (i / 3 < colors.size())
-			brush.SetColor(colors[i / 3]);
+			color = colors[i / 3];
 		else
-			brush.SetColor(Gdiplus::Color(0, 0, 0));
+			color = 0;
 		here0.x = showVertices[polygons[i]].x < 0 ? -1 : 0;
 		here0.x = showVertices[polygons[i]].x >= SCREEN_WIDTH ? 1 : here0.x;
 		here0.y = showVertices[polygons[i]].y < 0 ? -1 : 0;
@@ -72,18 +72,13 @@ void Object::draw_polygons(Gdiplus::Graphics& gr)
 		
 		if (here0.x + here1.x + here2.x != -3 && here0.x + here1.x + here2.x != 3)
 		if (here0.y + here1.y + here2.y != -3 && here0.y + here1.y + here2.y != 3) {
-			Gdiplus::PointF points[3];
 			if (here0.y == -1)
 				here0.y = 0;
-			points[0] = { showVertices[polygons[i]].x, showVertices[polygons[i]].y };
-			points[1] = { showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y };
-			points[2] = { showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y };
-			float m = Vec3<float>{ 0,0,-1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]]))) < 0;
 			//if (Vec3<float>{0, 0, 1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]])).unit_vec()) > 0)
-			(showVertices[polygons[i + 1]] - showVertices[polygons[i]]).print_in_debug(L"%f ");
-			((showVertices[polygons[i + 1]] - showVertices[polygons[i]]).crossProduct((showVertices[polygons[i + 2]] - showVertices[polygons[i]]))).print_in_debug(L"%f ");
-			if(m>0)
-				gr.FillPolygon(&brush, points, 3);
+			//(showVertices[polygons[i + 1]] - showVertices[polygons[i]]).print_in_debug(L"%f ");
+			//((showVertices[polygons[i + 1]] - showVertices[polygons[i]]).crossProduct((showVertices[polygons[i + 2]] - showVertices[polygons[i]]))).print_in_debug(L"%f ");
+			if(Vec3<float>{ 0,0,-1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]]))) < 0)
+				gr.draw_triangle(showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y ,showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y , color);
 		}
 	}
 
@@ -115,7 +110,7 @@ void Object::set_polygons(std::vector<int> polygons)
 	this->polygons = polygons;
 }
 
-void Object::set_colors(std::vector<Gdiplus::Color> colors)
+void Object::set_colors(std::vector<int> colors)
 {
 	this->colors = colors;
 }

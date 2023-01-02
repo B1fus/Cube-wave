@@ -6,7 +6,7 @@ World_scene::World_scene()
 	updateCameraPerspective = 0;
 	objects = std::vector<Object>();
 	updateProjObj = std::vector<bool>();
-	GdiGr = nullptr;
+	canvas = nullptr;
 	camera = Camera();
 }
 
@@ -15,9 +15,8 @@ World_scene::~World_scene()
 
 }
 
-void World_scene::set_gdiGraphics(Gdiplus::Graphics* gr)
-{
-	GdiGr = gr;
+void World_scene::set_canvas(Canvas* canvas) {
+	this->canvas = canvas;
 }
 
 void World_scene::add_object(Object obj)
@@ -31,7 +30,8 @@ void World_scene::draw_objects()
 {
 	std::vector<Object>::iterator iter;
 	for (iter = objects.begin(); iter != objects.end(); iter++) {
-		iter->draw_polygons(*GdiGr);
+		iter->draw_polygons(*canvas);
+		//iter->draw_edges(*canvas);
 	}
 }
 

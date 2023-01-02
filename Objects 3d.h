@@ -1,6 +1,7 @@
 
 #pragma once
 #include "framework.h"
+#include "2d canvas.h"
 
 class Camera
 {
@@ -39,13 +40,16 @@ public:
 	Object();
 	~Object();
 
-	void draw_polygons(Gdiplus::Graphics& gr);
+	//void draw_polygons(Gdiplus::Graphics& gr);
 	void draw_vertices(Gdiplus::Graphics& gr);
-	void draw_edges(Gdiplus::Graphics& gr);
+	//void draw_edges(Gdiplus::Graphics& gr);
+	void draw_polygons(Canvas& gr);
+	//void draw_vertices(Canvas& gr);
+	void draw_edges(Canvas& gr);
 
 	void set_vertices(std::vector<Vec3<float>> vert);
 	void set_polygons(std::vector<int> polygons);
-	void set_colors(std::vector<Gdiplus::Color> colors);
+	void set_colors(std::vector<int> colors);
 
 	void update_mat_transform(Camera const& camera);
 
@@ -57,7 +61,7 @@ private:
 	std::vector<Vec3<float>> vertices;
 	std::vector<Vec3<float>> showVertices; // after transformation
 	std::vector<int> polygons;
-	std::vector<Gdiplus::Color> colors; // colors of polygons
+	std::vector<int> colors; // colors of polygons
 
 	Mat2<float> matTransform;
 

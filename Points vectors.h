@@ -1,4 +1,5 @@
 #pragma once
+#include "framework.h"
 
 template <typename T>
 struct Point2
@@ -122,6 +123,148 @@ struct Point2
 template <typename T>
 inline bool operator==(const Point2<T> r, const Point2<T> l) {
 	return l.x == r.x && l.y == r.y;
+}
+
+
+template <typename T>
+struct Point3
+{
+	T x, y, z;
+
+	Point3()
+	{
+		x = T();
+		y = T();
+		z = T();
+	}
+
+	Point3(T x, T y, T z) :x(x), y(y), z(z) {}
+
+	Point3<T> operator+(Point3<T> const& r) const {
+		Point3<T> res;
+		res.x = x + r.x;
+		res.y = y + r.y;
+		res.z = z + r.z;
+		return res;
+	}
+
+	Point3<T> operator+(T r) const {
+		Point3<T> res;
+		res.x = x + r;
+		res.y = y + r;
+		res.z = z + r;
+		return res;
+	}
+
+	Point3<T> operator-(Point3<T> const& r) const {
+		Point3<T> res;
+		res.x = x - r.x;
+		res.y = y - r.y;
+		res.z = z - r.z;
+		return res;
+	}
+
+	Point3<T> operator-(T r) const {
+		Point3<T> res;
+		res.x = x - r;
+		res.y = y - r;
+		res.z = z - r;
+		return res;
+	}
+
+	Point3<T> operator*(Point3<T> const& r) const {
+		Point3<T> res;
+		res.x = x * r.x;
+		res.y = y * r.y;
+		res.z = z * r.z;
+		return res;
+	}
+	
+	Point3<T> operator*(T r) const {
+		Point3<T> res;
+		res.x = x * r;
+		res.y = y * r;
+		res.z = z * r;
+		return res;
+	}
+	
+	Point3<T> operator/(Point3<T> r) const {
+		Point3<T> res;
+		res.x = x / r.x;
+		res.y = y / r.y;
+		res.z = z / r.z;
+		return res;
+	}
+	
+	Point3<T> operator/(T r) const {
+		Point3<T> res;
+		res.x = x / r;
+		res.y = y / r;
+		res.z = z / r;
+		return res;
+	}
+	
+	Point3<T>& operator+=(Point3<T> const& r) {
+		x = x + r.x;
+		y = y + r.y;
+		z = z + r.z;
+		return *this;
+	}
+	
+	Point3<T>& operator+=(T r) {
+		x = x + r;
+		y = y + r;
+		z = z + r;
+		return *this;
+	}
+	
+	Point3<T>& operator-=(Point3<T> const& r) {
+		x = x - r.x;
+		y = y - r.y;
+		z = z - r.z;
+		return *this;
+	}
+	
+	Point3<T>& operator-=(T r) {
+		x = x - r;
+		y = y - r;
+		z = z - r;
+		return *this;
+	}
+	
+	Point3<T>& operator*=(Point3<T> const& r) {
+		x = x * r.x;
+		y = y * r.y;
+		z = z * r.z;
+		return *this;
+	}
+	
+	Point3<T>& operator*=(T r) {
+		x = x * r;
+		y = y * r;
+		z = z * r;
+		return *this;
+	}
+	
+	Point3<T>& operator/=(Point3<T> r) {
+		x = x / r.x;
+		y = y / r.y;
+		z = z / r.z;
+		return *this;
+	}
+	
+	Point3<T>& operator/=(T r) {
+		x = x / r;
+		y = y / r;
+		z = z / r;
+		return *this;
+	}
+	
+};
+
+template <typename T>
+inline bool operator==(const Point3<T> r, const Point3<T> l) {
+	return l.x == r.x && l.y == r.y && l.z == r.z;
 }
 
 

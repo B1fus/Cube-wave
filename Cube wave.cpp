@@ -6,6 +6,7 @@
 #include "Globals.h"
 #include "Resource.h"
 #include "World scene.h"
+#include "2d canvas.h"
 
 #define MAX_LOADSTRING 100
 
@@ -101,19 +102,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             6, 1, 5,
             6, 2, 1
     });
-    a.set_colors(std::vector<Gdiplus::Color>{
-        {80, 230, 90},
-        { 80, 230, 90 },
-        { 180, 230, 90 },
-        { 180, 230, 90 },
-        { 80, 230, 190 },
-        { 80, 230, 190 },
-        { 180, 230, 190 },
-        { 180, 230, 190 },
-        { 80, 30, 90 },
-        { 80, 30, 90 },
-        { 80, 30, 190 },
-        { 80, 30, 190 }
+    a.set_colors(std::vector<int>{
+		0xff0000,
+		0xff0000,
+		0x00ff00,
+		0x00ff00,
+		0x0000ff,
+		0x0000ff,
+		0xff00ff,
+		0xff00ff,
+		0xffff00,
+		0xffff00,
+		0x00ffff,
+		0x00ffff
     });
 
     a.scale = { 100,100,100 };
@@ -125,6 +126,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     world.add_object(a);
     a.position = { -200,0,0 };
     world.add_object(a);
+
+	world.set_canvas(&canvas);
 
     // Цикл основного сообщения:
     while (GetMessage(&msg, nullptr, 0, 0))
@@ -288,14 +291,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         static float df = 0;
         df += 0.5;
 
-        canvas.draw_line(10-df, 500, 1100, 100-df);
-        SetBitmapBits(Membitmap, win_width * win_height * sizeof(canvas.get_bitMap()[0]), canvas.get_bitMap());
+		canvas.fill_bitMap(0xffffff);
 
+		//canvas.draw_line(-48 ,716 ,18 ,443);
+		//canvas.draw_line(10, 100, 1000, 100 + df, RGB(0,0,255));
+        //canvas.draw_line(rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50, rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50,0x0);
+		Point2<int> p1 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
+		Point2<int> p2 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
+		Point2<int> p3 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
+		//Point2<int> p1 = { 600, int(10-df) };
+		//Point2<int> p2 = { int(-df), int(690 + df)};
+		//Point2<int> p3 = { int(1190+df), int(690 + df*1) };
+		canvas.draw_triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 0x0f00af);
+		canvas.draw_line(p1.x, p1.y, p2.x, p2.y, 0xff0000);
+		canvas.draw_line(p1.x, p1.y, p3.x, p3.y, 0xff0000);
+		canvas.draw_line(p3.x, p3.y, p2.x, p2.y, 0xff0000);
 
         Gdiplus::Graphics gr(Memhdc);
         //gr.FillRectangle(&whiteBrush, 0, 0, win_width, win_height); //clear window
-
-        world.set_gdiGraphics(&gr);
 
         if (world.get_count_objects() > 1) {
             world.edit_object(0).rotation = { 10,30,40 + df };
@@ -328,6 +341,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //wchar_t buffer[200];
         //swprintf(buffer, 200, L"22222 %d", 10);
         //OutputDebugString(buffer);
+        SetBitmapBits(Membitmap, win_width * win_height * sizeof(canvas.get_bitMap()[0]), canvas.get_bitMap());
+
 
         DELTA_TIME = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
         //Sleep(500); if(DELTA_TIME>500) DELTA_TIME -= 500;
