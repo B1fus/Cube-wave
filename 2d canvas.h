@@ -25,7 +25,7 @@ public:
 	void draw_line(int x1, int y1, int x2, int y2, int color);
 	void draw_line(Point2<int> p1, Point2<int> p2);
 
-	void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int color);
+	void draw_triangle(Vec3<float> p1, Vec3<float> p2, Vec3<float> p3, int color);
 
 	int* get_bitMap();
 
@@ -35,7 +35,7 @@ private:
 	inline void set_pixel_inside(int x, int y, int rgb);
 	Point2<char> pixel_position(int x, int y);
 	std::vector<int>* get_xs_of_line(int x1, int y1, int x2, int y2);
-	void draw_horizontal_line(int y, int x1, int x2, int const& color);
+	void draw_horizontal_line(int y, int x1, int x2, float z1, float z2, int const& color);
 	int width, height;
 	int* bitMap; //pixels of image
 	float* zBufferMap; //z buffer of image

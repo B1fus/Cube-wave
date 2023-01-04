@@ -77,8 +77,8 @@ void Object::draw_polygons(Canvas& gr)
 			//if (Vec3<float>{0, 0, 1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]])).unit_vec()) > 0)
 			//(showVertices[polygons[i + 1]] - showVertices[polygons[i]]).print_in_debug(L"%f ");
 			//((showVertices[polygons[i + 1]] - showVertices[polygons[i]]).crossProduct((showVertices[polygons[i + 2]] - showVertices[polygons[i]]))).print_in_debug(L"%f ");
-			if(Vec3<float>{ 0,0,-1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]]))) < 0)
-				gr.draw_triangle(showVertices[polygons[i]].x, showVertices[polygons[i]].y, showVertices[polygons[i + 1]].x, showVertices[polygons[i + 1]].y ,showVertices[polygons[i + 2]].x, showVertices[polygons[i + 2]].y , color);
+			if (Vec3<float>{ 0, 0, -1 } *((showVertices[polygons[i]] - showVertices[polygons[i + 1]]).crossProduct((showVertices[polygons[i + 1]] - showVertices[polygons[i + 2]]))) < 0)
+				gr.draw_triangle(showVertices[polygons[i]], showVertices[polygons[i + 1]], showVertices[polygons[i + 2]] , color);
 		}
 	}
 
@@ -220,7 +220,7 @@ Camera::Camera()
 
 	fov = 90;
 	aspect = float(SCREEN_WIDTH) / SCREEN_HEIGHT;
-	nearZ = 10;
+	nearZ = 100;
 	farZ = 1000;
 	lookatMat = create_lookat_mat();
 	perspectiveMat = create_perspective_mat();
@@ -280,7 +280,7 @@ Mat2<float> Camera::create_perspective_mat()
 	float sx = tanFov / aspect;
 	float sy = tanFov;
 	float sz = (farZ + nearZ) / (farZ - nearZ);
-	float dz = -(2 * farZ * nearZ) / (farZ - nearZ);
+	float dz = -(2 * farZ * nearZ) / (farZ - nearZ); 
 
 	res.set_element(0, 0, sx);
 	res.set_element(1, 1, sy);

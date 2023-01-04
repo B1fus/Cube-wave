@@ -118,13 +118,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     });
 
     a.scale = { 100,100,100 };
-    a.rotation = { 45,45,45 };
+    a.position.x = 400;
+    a.rotation = { 10,30,138};
 
     world.add_object(a);
-    a.rotation = { 0,45,45 };
+    a.rotation = { 0,-145,135 };
     a.position = { 100,0,0 };
     world.add_object(a);
+    a.rotation = { 0,45,135 };
     a.position = { -200,0,0 };
+    world.add_object(a);
+    a.rotation = { 0,10,0 };
+    a.position = { 300,0,0 };
     world.add_object(a);
 
 	world.set_canvas(&canvas);
@@ -289,30 +294,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //}
         
         static float df = 0;
-        df += 0.5;
+        df += 0.1*DELTA_TIME * FPS;
 
 		canvas.fill_bitMap(0xffffff);
 
 		//canvas.draw_line(-48 ,716 ,18 ,443);
 		//canvas.draw_line(10, 100, 1000, 100 + df, RGB(0,0,255));
         //canvas.draw_line(rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50, rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50,0x0);
-		Point2<int> p1 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
-		Point2<int> p2 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
-		Point2<int> p3 = { rand() % (SCREEN_WIDTH + 400) - 200,rand() % (SCREEN_HEIGHT + 400) - 200 };
-		//Point2<int> p1 = { 600, int(10-df) };
-		//Point2<int> p2 = { int(-df), int(690 + df)};
-		//Point2<int> p3 = { int(1190+df), int(690 + df*1) };
-		canvas.draw_triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 0x0f00af);
-		canvas.draw_line(p1.x, p1.y, p2.x, p2.y, 0xff0000);
-		canvas.draw_line(p1.x, p1.y, p3.x, p3.y, 0xff0000);
-		canvas.draw_line(p3.x, p3.y, p2.x, p2.y, 0xff0000);
+		//Vec3<float> p1 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
+		//Vec3<float> p2 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
+		//Vec3<float> p3 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
+		//Vec3<float> p1 = { 600,100, float(1-df/10000)};
+        //Vec3<float> p2 = { 100,600, float(0.9-df/10000)};
+		//Vec3<float> p3 = { 1100, 400, float(0.5-df/10000)};
+		////Point2<int> p1 = { 600, int(10-df) };
+		////Point2<int> p2 = { int(-df), int(690 + df)};
+		////Point2<int> p3 = { int(1190+df), int(690 + df*1) };
+		//canvas.draw_triangle(p1, p2, p3, 0x0f00af);
+		//canvas.draw_line(p1.x, p1.y, p2.x, p2.y, 0xff0000);
+		//canvas.draw_line(p1.x, p1.y, p3.x, p3.y, 0xff0000);
+		//canvas.draw_line(p3.x, p3.y, p2.x, p2.y, 0xff0000);
 
         Gdiplus::Graphics gr(Memhdc);
         //gr.FillRectangle(&whiteBrush, 0, 0, win_width, win_height); //clear window
 
-        if (world.get_count_objects() > 1) {
-            world.edit_object(0).rotation = { 10,30,40 + df };
+        if (world.get_count_objects() > 0) {
+            world.edit_object(0).rotation = { 10,30,136 + 4*8*(df/16/4 - int(df/16/4))};
+            world.edit_object(0).position.x = 0;
+            //world.edit_object(0).scale.z += df/32;
+            world.edit_object(0).position.x += df*4*16;
             world.edit_object(1).rotation = { 10,30 + df,40 };
+            world.edit_object(3).scale.y = 110+100 * sin(df);
+            world.edit_object(3).scale.x = 110+100 * cos(df);
+            world.edit_object(3).position.y -= df / 8 / 2/2;
+            world.edit_object(3).position.x -= df/32;
+            world.edit_object(2).position.y -= df/8/2/2;
+            //world.edit_object(0).position.z -= df/10; 
         }
 
         world.update_world();

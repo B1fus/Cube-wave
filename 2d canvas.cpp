@@ -5,7 +5,7 @@ Canvas::Canvas(int width, int height):width(width),height(height)
 	bitMap = new int[width * height];
 	zBufferMap = new float[width * height];
 	memset(bitMap, 0, width * height * sizeof(bitMap[0]));
-	memset(zBufferMap, 0, width * height * sizeof(zBufferMap[0]));
+	memset(zBufferMap, 1, width * height * sizeof(zBufferMap[0]));
 }
 
 Canvas::~Canvas()
@@ -17,6 +17,10 @@ Canvas::~Canvas()
 void Canvas::fill_bitMap(int rgb)
 {
 	memset(bitMap, rgb, width * height * sizeof(bitMap[0]));
+	//memset(zBufferMap, -1, width * height * sizeof(zBufferMap[0]));
+	for (int i = 0; i < width * height; i++) {
+		zBufferMap[i] = INFINITY;
+	}
 }
 
 void Canvas::set_pixel(int x, int y, char r, char g, char b)
@@ -300,68 +304,74 @@ void Canvas::draw_line(int x1, int y1, int x2, int y2, int color)
 
 }
 
-void Canvas::draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int color)
+void Canvas::draw_triangle(Vec3<float> p1, Vec3<float> p2, Vec3<float> p3, int color)
 {
-	int temp = 0;
+	Vec3<float> temp;
 	//1 point smaller, 3 point bigger
-	if (y1 > y2) {
-		temp = y1;
-		y1 = y2;
-		y2 = temp;
-		temp = x1;
-		x1 = x2;
-		x2 = temp;
+	if (p1.y > p2.y) {
+		temp = p1;
+		p1 = p2;
+		p2 = temp;
 	}
-	if (y2 > y3) {
-		temp = y2;
-		y2 = y3;
-		y3 = temp;
-		temp = x2;
-		x2 = x3;
-		x3 = temp;
+	if (p2.y > p3.y) {
+		temp = p2;
+		p2 = p3;
+		p3 = temp;
 	}
-	if (y1 > y2) {
-		temp = y1;
-		y1 = y2;
-		y2 = temp;
-		temp = x1;
-		x1 = x2;
-		x2 = temp;
+	if (p1.y > p2.y) {
+		temp = p1;
+		p1 = p2;
+		p2 = temp;
 	}
 
-	if (y1 == y2 && y2==y3) {
-		y3 += 1;
+	if (p1.y == p2.y && p2.y == p3.y) {
+		p3.y += 1;
 	}
 
-	std::vector<int>& v1 = *get_xs_of_line(x1, y1, x3, y3);
-	std::vector<int>& v2 = *get_xs_of_line(x1, y1, x2, y2);
-	std::vector<int>& v3 = *get_xs_of_line(x2, y2, x3, y3);
+	std::vector<int>& v1 = *get_xs_of_line(p1.x, p1.y, p3.x, p3.y);
+	std::vector<int>& v2 = *get_xs_of_line(p1.x, p1.y, p2.x, p2.y);
+	std::vector<int>& v3 = *get_xs_of_line(p2.x, p2.y, p3.x, p3.y);
 
 	//Vec4<int> f1{ x1,y1,x2,y2 };
 	//Vec2<int> f2{ x3,y3 };
 	//f1.print_in_debug(L"%d ");
 	//f2.print_in_debug(L"%d ");
-	temp = v2.size() - 2; //temp - size xs
+	temp.x = v2.size() - 2; //temp.x - size xs
 	int i = 0;
-	int yi = v1[0] < 0 ? 0 : v1[0];
+	int yi = v1[0] < 0 ? 0 : v1[0]; //y of drawing horizontal line = yi + i
+
+	//p1.z = 1/p1.z;
+	//p2.z = 1/p2.z;
+	//p3.z = 1/p3.z;
+	//p1.z = -1000/((1000/10-1)*(p1.z-1000/(1000-10)));
+	//p2.z = -1000/((1000/10-1)*(p2.z-1000/(1000-10)));
+	//p3.z = -1000/((1000/10-1)*(p3.z-1000/(1000-10)));
+
+	float dy13 = p3.y - p1.y;
+	float dy12 = p2.y - p1.y;
+	float dy23 = p3.y - p2.y;
+
+	float dz13 = p3.z - p1.z;
+	float dz12 = p2.z - p1.z;
+	float dz23 = p3.z - p2.z;
+	//TODO: bug with z index, when polygon goes beyond
 	for (; i < v1.size()-2; i++) {
 		if (i +v1[0] >= height)
 			break;
-		if (i < temp) {
+		if (i < v2.size() - 2) {
 			if (v2[i + 2] > v1[i + 2]) {
-				draw_horizontal_line(yi + i, v1[i + 2], v2[i + 2], color);
+				draw_horizontal_line(yi + i, v1[i + 2], v2[i + 2], dz13 / dy13 * (i) + p1.z, dz12 / dy12 * (i) + p1.z, color);
 			}
 			else {
-				draw_horizontal_line(yi + i, v2[i + 2], v1[i + 2], color);
+				draw_horizontal_line(yi + i, v2[i + 2], v1[i + 2], dz12 / dy12 * (i) + p1.z, dz13 / dy13 * (i) + p1.z, color);
 			}
-				// TODO: swap 1 and 2 if x1>x2
 		}
 		else {
-			if (v3[i + 2 - temp] > v1[i + 2]) {
-				draw_horizontal_line(yi + i,  v1[i + 2 ], v3[i + 2 - temp], color);
+			if (v3[i - v2.size() + 4] > v1[i + 2]) {
+				draw_horizontal_line(yi + i, v1[i + 2], v3[i - v2.size() + 4], dz13 / dy13 * (i)+p1.z, dz23 / dy23 * (i - temp.x) + p2.z, color);
 			}
 			else {
-				draw_horizontal_line(yi + i, v3[i + 2 - temp],  v1[i + 2], color);
+				draw_horizontal_line(yi + i, v3[i - v2.size() + 4],  v1[i + 2], dz23 / dy23 * (i - temp.x)+p2.z, dz13 / dy13 * (i)+p1.z, color);
 
 			}
 		}
@@ -404,7 +414,7 @@ Point2<char> Canvas::pixel_position(int x, int y)
 
 std::vector<int>* Canvas::get_xs_of_line(int x1, int y1, int x2, int y2)
 {
-	int dx, dy, oldDy, x, y;
+	float dx, dy, x, y;
 	std::vector<int>* res = new std::vector<int>();
 
 	Point2<char> pos1 = pixel_position(x1, y1);
@@ -424,18 +434,35 @@ std::vector<int>* Canvas::get_xs_of_line(int x1, int y1, int x2, int y2)
 		if (y >= height)
 			break;
 		x = x1 + (dx * (y - y1)) / dy;
-		if (x < 0)
-			res->push_back(0);
-		else if (x >= width)
-			res->push_back(width);
-		else
+		//if (x < 0)
+		//	res->push_back(0);
+		//else if (x >= width)
+		//	res->push_back(width);
+		//else
 			res->push_back(x);
 	}
 	return res;
 }
 
-void Canvas::draw_horizontal_line(int y, int x1, int x2, int const& color)
+void Canvas::draw_horizontal_line(int y, int x1, int x2, float z1, float z2, int const& color)
 {
-	std::fill(bitMap + get_offset(x1, y), bitMap + get_offset(x2, y), color);
+	int dx = x2 - x1;
+	float dz = z2 - z1;
+	int maxI = x2 >= width ? width - x1 : dx;
+
+	int offset = get_offset(x1, y);
+	float z;
+
+	for (int i = x1 < 0 ? -x1 : 0; i < dx; i++) {
+		if (i >= maxI)
+			break;
+		z = (dz / dx * (i) + z1);
+		if (zBufferMap[offset + i] > z && z > 0 && z<1) {
+			bitMap[offset + i] = color;
+			bitMap[offset + i] = RGB(z*255,z*255,z*255);
+			zBufferMap[offset + i] = z;
+		}
+	}
+	//std::fill(bitMap + get_offset(x1, y), bitMap + get_offset(x2, y), color);
 	//memset(bitMap + get_offset(x1, y), 0xff00af, (x2 - x1) * sizeof(bitMap[0]));
 }
