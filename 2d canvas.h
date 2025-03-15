@@ -34,7 +34,7 @@ private:
 	inline bool is_pixel_inside(int x, int y);
 	inline void set_pixel_inside(int x, int y, int rgb);
 	Point2<char> pixel_position(int x, int y);
-	std::vector<int>* get_xs_of_line(int x1, int y1, int x2, int y2);
+	std::vector<std::pair<int, float>>* get_xs_of_line(int x1, int y1, float z1, int x2, int y2, float z2);
 	void draw_horizontal_line(int y, int x1, int x2, float z1, float z2, int const& color);
 	int width, height;
 	int* bitMap; //pixels of image

@@ -12,6 +12,10 @@ public:
 
 	Camera get_camera();
 	void set_camera(Camera newCamera);
+	void set_position_camera(Vec3<float> pos);
+	void add_position_camera(Vec3<float> pos);
+	Vec3<float> get_direction_camera();
+	void set_direction_camera(Vec3<float> dir);
 
 	void add_object(Object obj);
 	Object get_object(int num);

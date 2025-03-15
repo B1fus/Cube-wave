@@ -931,7 +931,6 @@ struct Mat2
 		}
 		return res;
 	}
-	//friend bool operator==(const Mat2<T>& r, const Mat2<T>& l);
 
 private:
 	int M, N;

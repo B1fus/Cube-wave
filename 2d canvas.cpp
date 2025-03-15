@@ -17,7 +17,6 @@ Canvas::~Canvas()
 void Canvas::fill_bitMap(int rgb)
 {
 	memset(bitMap, rgb, width * height * sizeof(bitMap[0]));
-	//memset(zBufferMap, -1, width * height * sizeof(zBufferMap[0]));
 	for (int i = 0; i < width * height; i++) {
 		zBufferMap[i] = INFINITY;
 	}
@@ -79,25 +78,6 @@ void Canvas::draw_line(int x1, int y1, int x2, int y2, int color)
 	
 	int dx = x2 - x1;
 	int dy = y2 - y1;
-
-	//x=(dy*y-a*dx+dy*b)/dx
-	//y = (dx*x+a*dx-dy*b)/dy
-	//a - x of point, b - y of point
-	//x,y - coord of new point
-
-	/*if (pos1.x == -1) {
-		y1 = y1 - dy * (-float(x1) / dx);
-		x1 = 0;
-	}
-	if (pos2.x == -1) {
-		y2 = y2 - dy * (-float(x2) / dx);
-		x2 = 0;
-	}
-
-	if (pos1.x == 1) {
-		y1 = y1 - dy * (float(x1 - width) / dx);
-		x1 = width - 1;
-	}*/
 
 	int x, y;
 
@@ -288,25 +268,12 @@ void Canvas::draw_line(int x1, int y1, int x2, int y2, int color)
 		}
 	}
 
-	/*int p = 2 * dy - dx;
-	while (x < x2) {
-		if (p >= 0) {
-			set_pixel_inside(x, y, 0xff);
-			y++;
-			p = p + 2 * dy - 2 * dx;
-		}
-		else {
-			set_pixel_inside(x, y, 0xff);
-			p = p + 2 * dy;
-		}
-		x = x + 1;
-	}*/
-
 }
 
 void Canvas::draw_triangle(Vec3<float> p1, Vec3<float> p2, Vec3<float> p3, int color)
 {
 	Vec3<float> temp;
+
 	//1 point smaller, 3 point bigger
 	if (p1.y > p2.y) {
 		temp = p1;
@@ -328,24 +295,13 @@ void Canvas::draw_triangle(Vec3<float> p1, Vec3<float> p2, Vec3<float> p3, int c
 		p3.y += 1;
 	}
 
-	std::vector<int>& v1 = *get_xs_of_line(p1.x, p1.y, p3.x, p3.y);
-	std::vector<int>& v2 = *get_xs_of_line(p1.x, p1.y, p2.x, p2.y);
-	std::vector<int>& v3 = *get_xs_of_line(p2.x, p2.y, p3.x, p3.y);
+	std::vector<std::pair<int, float>>& v1 = *get_xs_of_line(p1.x, p1.y, p1.z, p3.x, p3.y, p3.z);
+	std::vector<std::pair<int, float>>& v2 = *get_xs_of_line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+	std::vector<std::pair<int, float>>& v3 = *get_xs_of_line(p2.x, p2.y, p2.z, p3.x, p3.y, p3.z);
 
-	//Vec4<int> f1{ x1,y1,x2,y2 };
-	//Vec2<int> f2{ x3,y3 };
-	//f1.print_in_debug(L"%d ");
-	//f2.print_in_debug(L"%d ");
-	temp.x = v2.size() - 2; //temp.x - size xs
+	temp.x = v2.size(); //temp.x - size xs
 	int i = 0;
-	int yi = v1[0] < 0 ? 0 : v1[0]; //y of drawing horizontal line = yi + i
-
-	//p1.z = 1/p1.z;
-	//p2.z = 1/p2.z;
-	//p3.z = 1/p3.z;
-	//p1.z = -1000/((1000/10-1)*(p1.z-1000/(1000-10)));
-	//p2.z = -1000/((1000/10-1)*(p2.z-1000/(1000-10)));
-	//p3.z = -1000/((1000/10-1)*(p3.z-1000/(1000-10)));
+	int yi = p1.y < 0 ? 0 : p1.y; //y of drawing horizontal line = yi + i
 
 	float dy13 = p3.y - p1.y;
 	float dy12 = p2.y - p1.y;
@@ -355,27 +311,28 @@ void Canvas::draw_triangle(Vec3<float> p1, Vec3<float> p2, Vec3<float> p3, int c
 	float dz12 = p2.z - p1.z;
 	float dz23 = p3.z - p2.z;
 	//TODO: bug with z index, when polygon goes beyond
-	for (; i < v1.size()-2; i++) {
-		if (i +v1[0] >= height)
+	for (; i < v1.size(); i++) {
+		if (i + p1.y >= height)
 			break;
-		if (i < v2.size() - 2) {
-			if (v2[i + 2] > v1[i + 2]) {
-				draw_horizontal_line(yi + i, v1[i + 2], v2[i + 2], dz13 / dy13 * (i) + p1.z, dz12 / dy12 * (i) + p1.z, color);
+		if (i < v2.size()) {
+			if (v2[i] > v1[i]) {
+				draw_horizontal_line(yi + i, v1[i].first, v2[i].first, v1[i].second, v2[i].second, color);
 			}
 			else {
-				draw_horizontal_line(yi + i, v2[i + 2], v1[i + 2], dz12 / dy12 * (i) + p1.z, dz13 / dy13 * (i) + p1.z, color);
+				draw_horizontal_line(yi + i, v2[i].first, v1[i].first, v2[i].second, v1[i].second, color);
 			}
 		}
 		else {
-			if (v3[i - v2.size() + 4] > v1[i + 2]) {
-				draw_horizontal_line(yi + i, v1[i + 2], v3[i - v2.size() + 4], dz13 / dy13 * (i)+p1.z, dz23 / dy23 * (i - temp.x) + p2.z, color);
+			if (v3[i - v2.size()] > v1[i]) {
+				draw_horizontal_line(yi + i, v1[i].first, v3[i - v2.size()].first, v1[i].second, v3[i - temp.x].second, color);
 			}
 			else {
-				draw_horizontal_line(yi + i, v3[i - v2.size() + 4],  v1[i + 2], dz23 / dy23 * (i - temp.x)+p2.z, dz13 / dy13 * (i)+p1.z, color);
+				draw_horizontal_line(yi + i, v3[i - v2.size()].first,  v1[i].first, v3[i - temp.x].second, v1[i].second, color);
 
 			}
 		}
 	}
+
 	delete &v1;
 	delete &v2;
 	delete &v3;
@@ -412,34 +369,31 @@ Point2<char> Canvas::pixel_position(int x, int y)
 	return res;
 }
 
-std::vector<int>* Canvas::get_xs_of_line(int x1, int y1, int x2, int y2)
+//first - x, second - z
+std::vector<std::pair<int, float>>* Canvas::get_xs_of_line(int x1, int y1, float z1, int x2, int y2, float z2)
 {
-	float dx, dy, x, y;
-	std::vector<int>* res = new std::vector<int>();
+	int dx, dy, x, y;
+	float dz, z;
+	std::pair<int, float> addElem;
+	std::vector<std::pair<int, float>>* res = new std::vector<std::pair<int, float>>();
 
 	Point2<char> pos1 = pixel_position(x1, y1);
 	Point2<char> pos2 = pixel_position(x2, y2);
-	res->push_back(y1);
-	res->push_back(y2);
 
-	if (abs(pos1.x + pos2.x) == 2 && abs(pos1.y + pos2.y) == 2)
-		return res;
 	if (abs(pos1.y + pos2.y) == 2)
 		return res;
 
 	dx = x2 - x1;
 	dy = y2 - y1;
+	dz = z2 - z1;
 
 	for (y = y1 < 0 ? 0 : y1; y < y2; y++) {
 		if (y >= height)
 			break;
-		x = x1 + (dx * (y - y1)) / dy;
-		//if (x < 0)
-		//	res->push_back(0);
-		//else if (x >= width)
-		//	res->push_back(width);
-		//else
-			res->push_back(x);
+		x = x1 + (dx * (y - y1)) / dy; 
+		z = dz / dy * (y - y1)+z1;
+		addElem = { x,z };
+		res->push_back(addElem);
 	}
 	return res;
 }
@@ -457,12 +411,9 @@ void Canvas::draw_horizontal_line(int y, int x1, int x2, float z1, float z2, int
 		if (i >= maxI)
 			break;
 		z = (dz / dx * (i) + z1);
-		if (zBufferMap[offset + i] > z && z > 0 && z<1) {
+		if (zBufferMap[offset + i] > z && z > 0) {
 			bitMap[offset + i] = color;
-			bitMap[offset + i] = RGB(z*255,z*255,z*255);
 			zBufferMap[offset + i] = z;
 		}
 	}
-	//std::fill(bitMap + get_offset(x1, y), bitMap + get_offset(x2, y), color);
-	//memset(bitMap + get_offset(x1, y), 0xff00af, (x2 - x1) * sizeof(bitMap[0]));
 }

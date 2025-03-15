@@ -2,11 +2,14 @@
 //
 #pragma warning(disable : 4996)
 
+#include <filesystem>
+#include <iostream>
 #include "framework.h"
 #include "Globals.h"
 #include "Resource.h"
 #include "World scene.h"
 #include "2d canvas.h"
+#include "Window inputs.h"
 
 #define MAX_LOADSTRING 100
 
@@ -25,6 +28,9 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 World_scene world;
 Object a;
 Canvas canvas(SCREEN_WIDTH,SCREEN_HEIGHT);
+
+Keyboard keyboard;
+Mouse mouse;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -55,83 +61,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    //Mat2<int> a(4, 5);
-    ////Mat2<int> b(3, 5);
-    //Mat2<int> b(5, 3);
+    // add objects
+    world.add_object(Object::load_obj_file("suzanne.obj"));
+    world.add_object(Object::load_obj_file("suzanne.obj"));
 
-    //a.set_element(0, 2, 12);
-    //b.set_element(0, 2, 12);
-    //for (int i = 0; i < 10; i++) {
-    //    a.set_element(rand() % 4, rand() % 5, rand() % 5);
-    //    //b.set_element(rand() % 3, rand() % 5, rand() % 5);
-    //    b.set_element(rand() % 5, rand() % 3, rand() % 5);
-    //}
-
-    //a.print_in_debug(L"\t%5d ");
-    //b.print_in_debug(L"\t%5d ");
-    //(a * b).print_in_debug(L"\t%5d ");
-    //int arr[] = {1,2,
-    //            3,4,
-    //            1,2};
-    //Mat2<int> c(3, 2, arr);
-    //(c).print_in_debug(L"\t%5d ");
-    //Vec2<int> df(1,3);
-    //df.print_in_debug(L"%d ");
-
-    a.set_vertices(std::vector<Vec3<float>> {
-        {1, 1, 1},
-        { -1, 1, 1 },
-        { -1, -1, 1 },
-        { 1, -1, 1 },
-        { 1, 1, -1 },
-        { -1, 1, -1 },
-        { -1, -1, -1 },
-        { 1, -1, -1 }
-    });
-    a.set_polygons(std::vector<int> {
-        0, 1, 2,
-            0, 2, 3,
-            0, 3, 7,
-            0, 7, 4,
-            0, 5, 1,
-            0, 4, 5,
-            6, 5, 4,
-            6, 4, 7,
-            6, 3, 2,
-            6, 7, 3,
-            6, 1, 5,
-            6, 2, 1
-    });
-    a.set_colors(std::vector<int>{
-		0xff0000,
-		0xff0000,
-		0x00ff00,
-		0x00ff00,
-		0x0000ff,
-		0x0000ff,
-		0xff00ff,
-		0xff00ff,
-		0xffff00,
-		0xffff00,
-		0x00ffff,
-		0x00ffff
-    });
-
-    a.scale = { 100,100,100 };
-    a.position.x = 400;
-    a.rotation = { 10,30,138};
-
-    world.add_object(a);
-    a.rotation = { 0,-145,135 };
-    a.position = { 100,0,0 };
-    world.add_object(a);
-    a.rotation = { 0,45,135 };
-    a.position = { -200,0,0 };
-    world.add_object(a);
-    a.rotation = { 0,10,0 };
-    a.position = { 300,0,0 };
-    world.add_object(a);
-
+   
 	world.set_canvas(&canvas);
 
     // Цикл основного сообщения:
@@ -233,6 +167,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
+    case WM_KILLFOCUS:
+        hasFocus = 0;
+        mouse.buttons = 0;
+        keyboard.clear();
+        break;
+    case WM_SETFOCUS:
+        hasFocus = 1;
+        break;
     case WM_COMMAND:
     {
         int wmId = LOWORD(wParam);
@@ -261,18 +203,50 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             keyIsDown = ((lParam & (1 << 31)) == 0);
             keyWasDown = ((lParam & (1 << 30)) != 0);
             if (keyIsDown != keyWasDown) {
+                keyboard.keys[wParam] = keyIsDown;
                 if (wParam == VK_ESCAPE) {
                     PostQuitMessage(1);
-                }
+                }/*
+        wchar_t buffer[200];
+        swprintf(buffer, 200, L"%d %d %d\n", keyboard.keys['A'], 'A', wParam);
+        OutputDebugString(buffer);*/
             }
         }
         break;
     }
+    case WM_MOUSEMOVE: {
+        mouse.coords = { LOWORD(lParam), HIWORD(lParam) };
+        break;
+    }
+    case WM_LBUTTONDOWN: mouse.buttons |= MOUSE_LEFT; break;
+    case WM_LBUTTONUP: mouse.buttons &= ~MOUSE_LEFT; break;
+    case WM_MBUTTONDOWN: mouse.buttons |= MOUSE_MIDDLE; break;
+    case WM_MBUTTONUP: mouse.buttons &= ~MOUSE_MIDDLE; break;
+    case WM_RBUTTONDOWN: mouse.buttons |= MOUSE_RIGHT; break;
+    case WM_RBUTTONUP: mouse.buttons &= ~MOUSE_RIGHT; break;
+    case WM_XBUTTONDOWN: {
+        if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+            mouse.buttons |= MOUSE_X1;
+        else
+            mouse.buttons |= MOUSE_X2;
+        break;
+    }
+    case WM_XBUTTONUP: {
+        if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+            mouse.buttons &= ~MOUSE_X1;
+        else
+            mouse.buttons &= ~MOUSE_X2;
+        break;
+    }
+    case WM_MOUSEWHEEL: {
+        if (wParam & (1 << 30))
+            mouse.wheel = -1;
+        else
+            mouse.wheel = 1;
+        break;
+    }
     case WM_PAINT:
     {
-        //wchar_t buffer[200];
-        //swprintf(buffer, 200, L"%d %d %d\n", wParam, wParam & (1 << 30), mouse.wheel);
-        //OutputDebugString(buffer);
 
         GetClientRect(hWnd, &Client_Rect);
         win_width = Client_Rect.right - Client_Rect.left;
@@ -283,81 +257,65 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SelectObject(Memhdc, Membitmap);
         //drawing code goes in here
         start_time = std::chrono::steady_clock::now();
-        //static int* img = new int[win_height*win_width];
-        //for (int i = 0; i < win_height*win_width; i++) {
-        //    if (i > 1000 && i < 100000) {
-        //        img[i] = 0xffffff;
-        //    }
-        //    else {
-        //        img[i] = 0;
-        //    }
-        //}
         
         static float df = 0;
         df += 0.1*DELTA_TIME * FPS;
 
-		canvas.fill_bitMap(0xffffff);
+		canvas.fill_bitMap(0xff);
+        if (keyboard.keys['W'] || keyboard.keys['D'] || keyboard.keys['S'] || keyboard.keys['A'] || keyboard.keys[' '] || keyboard.keys[VK_SHIFT]) {
+            Vec3<float> dir = world.get_direction_camera();
+            if (keyboard.keys['W'])
+                world.add_position_camera(Vec3<float>(dir.x, 0, dir.z).unit_vec());
+            if (keyboard.keys['D'])
+                world.add_position_camera(dir.crossProduct({ 0,-1,0 }).unit_vec() * -1);
+            if (keyboard.keys['S'])
+                world.add_position_camera(Vec3<float>(-dir.x, 0, -dir.z).unit_vec());
+            if (keyboard.keys['A'])
+                world.add_position_camera(dir.crossProduct({ 0,-1,0 }).unit_vec());
+            if (keyboard.keys[' '])
+                world.add_position_camera({ 0,1,0 });
+            if (keyboard.keys[VK_SHIFT])
+                world.add_position_camera({ 0,-1,0 });
+        }
 
-		//canvas.draw_line(-48 ,716 ,18 ,443);
-		//canvas.draw_line(10, 100, 1000, 100 + df, RGB(0,0,255));
-        //canvas.draw_line(rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50, rand() % (SCREEN_WIDTH + 100) - 50, rand() % (SCREEN_HEIGHT+100)-50,0x0);
-		//Vec3<float> p1 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
-		//Vec3<float> p2 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
-		//Vec3<float> p3 = { float(rand() % (SCREEN_WIDTH + 400) - 200),float(rand() % (SCREEN_HEIGHT + 400) - 200), 0 };
-		//Vec3<float> p1 = { 600,100, float(1-df/10000)};
-        //Vec3<float> p2 = { 100,600, float(0.9-df/10000)};
-		//Vec3<float> p3 = { 1100, 400, float(0.5-df/10000)};
-		////Point2<int> p1 = { 600, int(10-df) };
-		////Point2<int> p2 = { int(-df), int(690 + df)};
-		////Point2<int> p3 = { int(1190+df), int(690 + df*1) };
-		//canvas.draw_triangle(p1, p2, p3, 0x0f00af);
-		//canvas.draw_line(p1.x, p1.y, p2.x, p2.y, 0xff0000);
-		//canvas.draw_line(p1.x, p1.y, p3.x, p3.y, 0xff0000);
-		//canvas.draw_line(p3.x, p3.y, p2.x, p2.y, 0xff0000);
+        if (keyboard.keys[VK_RIGHT] || keyboard.keys[VK_LEFT] || keyboard.keys[VK_UP] || keyboard.keys[VK_DOWN]) {
+            Vec3<float> dir = world.get_direction_camera();
+            float theta = acosf(dir.y);
+            float fi = atan2f(dir.x, dir.z);
+
+            if (keyboard.keys[VK_RIGHT]) {
+                fi -= 0.01;
+            }
+            if (keyboard.keys[VK_LEFT]) {
+                fi += 0.01;
+            }
+            if (keyboard.keys[VK_UP]) {
+                theta -= 0.01;
+            }
+            if (keyboard.keys[VK_DOWN]) {
+                theta += 0.01;
+            }
+            if (theta <= 0.01) theta = 0.01;
+            if (theta >= M_PI - 0.001) theta = M_PI-0.01;
+            dir.z = sinf(theta) * cosf(fi);
+            dir.x = sinf(theta) * sinf(fi);
+            dir.y = cosf(theta);
+            Vec2<float>(theta, fi).print_in_debug(L"%f ");
+            dir.print_in_debug(L"%f ");
+            world.set_direction_camera(dir);
+        }
 
         Gdiplus::Graphics gr(Memhdc);
-        //gr.FillRectangle(&whiteBrush, 0, 0, win_width, win_height); //clear window
 
         if (world.get_count_objects() > 0) {
-            world.edit_object(0).rotation = { 10,30,136 + 4*8*(df/16/4 - int(df/16/4))};
-            world.edit_object(0).position.x = 0;
-            //world.edit_object(0).scale.z += df/32;
-            world.edit_object(0).position.x += df*4*16;
-            world.edit_object(1).rotation = { 10,30 + df,40 };
-            world.edit_object(3).scale.y = 110+100 * sin(df);
-            world.edit_object(3).scale.x = 110+100 * cos(df);
-            world.edit_object(3).position.y -= df / 8 / 2/2;
-            world.edit_object(3).position.x -= df/32;
-            world.edit_object(2).position.y -= df/8/2/2;
-            //world.edit_object(0).position.z -= df/10; 
+            world.edit_object(0).rotation = { 0, df*5, 180 };
+            world.edit_object(1).position.x = 1000;
+            world.edit_object(1).scale.y = 800 + 200 * sin(df);
+            world.edit_object(1).scale.x = 800 + 200 * cos(df);
         }
 
         world.update_world();
         world.draw_objects();
-
-        //static float df = 0;
-        //df += FPS * DELTA_TIME * 1;
-        //a.scale = { 100,100,100 };
-        //a.position = { 0 ,0,0 };
-        //a.rotation = { a.rotation.x, df, df};
-        //a.rotation.x += float(rand() % 180 - 90)/100;
-        //a.rotation.y += float(rand() % 180 - 90)/10;
-        //a.rotation.z += float(rand() % 180 - 90)/100;
-        //a.update_mat_transform();
-        //a.draw_vertices(gr);
-        //a.draw_polygons(gr);
-        //a.draw_edges(gr);
-        //a.draw_vertices(gr);
-
-        //GetBitmapBits(Membitmap, 4 * win_height * win_width, img);
-        //img[mouse.coords.y*win_width+mouse.coords.x] = 0xff0000;
-        //light.get_mat_height(img);
-
-        //SetBitmapBits(Membitmap, sizeof(img[0]) * SCREEN_WIDTH * SCREEN_HEIGHT, img);
-        //output to debug panel
-        //wchar_t buffer[200];
-        //swprintf(buffer, 200, L"22222 %d", 10);
-        //OutputDebugString(buffer);
         SetBitmapBits(Membitmap, win_width * win_height * sizeof(canvas.get_bitMap()[0]), canvas.get_bitMap());
 
 

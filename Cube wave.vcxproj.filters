@@ -42,6 +42,9 @@
     <ClInclude Include="2d canvas.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="Window inputs.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cube wave.cpp">
@@ -57,6 +60,9 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="2d canvas.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Window inputs.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
